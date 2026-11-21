@@ -30,10 +30,22 @@
 | 액션 | 메서드 | 엔드포인트 | 비고 |
 |---|---|---|---|
 | 목록 조회 | GET | `/api/admin/reviews?page=&reported=` | |
-| 후기 삭제 | DELETE | `/api/admin/reviews/:id` | |
+| 후기 삭제 | DELETE | `/api/admin/reviews/:id` | 별점 평균 재계산 필요 |
 
-## 4. 완료 기준
+## 4. 신고 연결 방식
+
+현재 `Report`는 `targetId`(유저) + `meetupId`(번개)만 가리킨다. 후기를 신고 대상으로 연결하려면 서버 스키마 변경이 필요하다.
+
+> **권장 방식**: `Report`에 `targetType` (`USER` | `MEETUP` | `REVIEW`) + `targetId` 필드 일반화 ([신뢰 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/trust.md) 15 — "후기 한 줄도 신고할 수 있다"). 서버 개발 착수 시 `crew-api` 이슈로 연다.
+
+## 5. 삭제 기준
+
+- 후기 삭제는 매너온도에 영향 없음 ([신뢰 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/trust.md) 14)
+- 삭제 시 호스트의 **별점 평균** 재계산 필요 (별점 3개 이상 표시 조건 — 서버에서 처리)
+- 삭제 사유: 신고 처리, 허위·욕설 내용
+
+## 6. 완료 기준
 
 - [ ] 목록 조회 (서버 API 개발 후)
 - [ ] 신고된 후기 필터
-- [ ] 후기 삭제
+- [ ] 후기 삭제 (별점 평균 재계산 포함)
