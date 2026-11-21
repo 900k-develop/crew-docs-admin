@@ -24,7 +24,7 @@
 | 액션 | 메서드 | 엔드포인트 | 비고 |
 |---|---|---|---|
 | 메시지 목록 | GET | `/api/admin/groups/:id/messages?page=` | |
-| 메시지 삭제 | DELETE | `/api/admin/group-messages/:messageId` | |
+| 메시지 삭제 | DELETE | `/api/admin/groups/:groupId/messages/:messageId` | REST 경로 일관성 — 서버 착수 시 확정 |
 
 > **신규 API 필요**: 크루 채팅은 서버 신규 개발 항목. API 엔드포인트는 개발 착수 시 확정.
 
