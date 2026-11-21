@@ -38,7 +38,7 @@
 | 목록 조회 | GET | `/api/admin/users?page=&q=` | |
 | 상세 조회 | GET | `/api/admin/users/:id` | 기기 정보·관심사 포함 |
 | 제한 설정 | PATCH | `/api/admin/users/:id` | `{ restrictedUntil }` |
-| 회원 탈퇴 | DELETE | `/api/admin/users/:id` | ⚠️ 단순 DB 삭제 금지 — 아래 주의사항 참고 |
+| 회원 탈퇴 | POST | `/api/admin/users/:id/withdraw` | 앱 탈퇴와 동일 로직 — 아래 주의사항 참고 |
 
 ## 4. 상태 · 필터
 
@@ -46,18 +46,37 @@
 - 정렬: 가입일 최신순 (고정)
 - 페이지네이션: 20건/페이지
 
-## 5. 회원 탈퇴 주의사항
+## 5. 회원 탈퇴 처리 상세
 
-현재 `DELETE /api/admin/users/:id`는 `prisma.user.delete`로 DB에서 바로 삭제한다. 어드민에서 탈퇴 처리 시 아래 절차가 필요하다 ([로그인 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/login.md) 1.9 · 1.10):
+### 용도
+
+앱에서 탈퇴 기능을 쓸 수 없는 경우 운영팀 요청으로 처리 — [운영 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/operations.md) 9 (앱을 지운 사람의 이메일 삭제 요청, 구글 플레이 탈퇴 요건 대응). 처리 전 본인 확인 필수 (문의 이메일 ↔ 가입 번호).
+
+### API 설계
+
+`DELETE /api/admin/users/:id`(단순 DB 삭제)를 **쓰지 않는다.** 앱 탈퇴와 동일한 서버 로직을 한 곳에 두고 어드민은 `POST /api/admin/users/:id/withdraw`로 호출 ([로그인 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/login.md) 1.9 · 1.10 · 34):
 
 | 절차 | 내용 |
 |---|---|
-| 전화번호 암호화 보관 | 탈퇴 후 6개월 (제재 중이면 제재 종료까지) — 재가입 제한 조회에 사용 |
-| 카카오 연결 끊기 | 카카오 API 호출 필요 |
-| 애플 토큰 철회 | Apple Sign-in revoke token 필요 |
-| 푸시 토큰 삭제 | FCM 토큰 제거 |
+| 전화번호 암호화 보관 | 탈퇴 후 6개월 (제재 중이면 제재 종료까지) — 재가입 제한 조회에 사용 (로그인 정책 39) |
+| 카카오 연결 끊기 | 카카오 API 호출 (로그인 정책 35) |
+| 애플 토큰 철회 | Apple Sign-in revoke token (로그인 정책 35) |
+| 푸시 토큰 삭제 | FCM 토큰 제거 (로그인 정책 35) |
+| 호스트 번개 취소 | 예정 번개 일괄 취소 · 참여자 알림 (로그인 정책 34) |
+| 오너 크루 | 운영팀 오너 변경 처리 필요 (groups spec 오너 변경 참고) |
+| 콘텐츠 익명화 | 글·후기·메시지는 "탈퇴한 사용자"로 남김 (로그인 정책 38) |
+| 활동 로그 | `USER_WITHDRAW` 이벤트 기록 |
 
-> **서버 개발 필요**: 위 절차를 처리하는 탈퇴 전용 API가 구현되기 전까지 어드민에서 직접 탈퇴를 실행하지 않는다.
+> 단순 DB 삭제 시 노쇼·신고 제재 우회(탈퇴→재가입)와 관계 데이터 삭제 실패 위험이 있다.
+
+### 어드민 확인 모달
+
+탈퇴는 복구 불가 — UI에서 2단계 확인 필요:
+
+1. 슬라이드 패널에서 "회원 탈퇴" 버튼 클릭
+2. 확인 모달: 유저 이름 직접 입력 후 "탈퇴 처리" 버튼 활성화
+
+> **서버 개발 필요**: `POST /api/admin/users/:id/withdraw` API 구현 전까지 어드민에서 탈퇴를 실행하지 않는다.
 
 ## 6. 완료 기준
 
@@ -67,5 +86,5 @@
 - [x] 활동 제한 / 해제
 - [x] 에러 상태 표시
 - [ ] 관심사 표시 (User.interests 서버 저장 후)
-- [ ] 회원 탈퇴 처리 액션
+- [ ] 회원 탈퇴 처리 액션 (서버 `/withdraw` API 개발 후 · 2단계 확인 모달 포함)
 - [ ] 기기 정보 섹션 (Device 테이블 추가 후)
