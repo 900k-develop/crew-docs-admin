@@ -2,7 +2,8 @@
 
 - 경로: `/groups/:id/messages`
 - 구현 파일: `src/ui/screens/GroupMessagesScreen.tsx`
-- 관련 기획: [crew-docs PR #25](https://github.com/900k-develop/crew-docs/pull/25) — 크루 채팅 MVP 포함 확정
+- 관련 기획: [crew-docs PR #25](https://github.com/900k-develop/crew-docs/pull/25)
+- **상태**: 크루 채팅 개발 확정 후 구현. [#42](https://github.com/900k-develop/crew-docs/issues/42)(출시 일정·백엔드 담당)가 정해지면 착수. 사람이 모자라면 크루 채팅부터 빠질 수 있음 ([개발 범위·일정](https://github.com/900k-develop/crew-docs/blob/main/docs/5-launch/mvp-schedule.md))
 - 관련 화면: [groups/spec.md](../groups/spec.md)
 
 ## 1. 목적
