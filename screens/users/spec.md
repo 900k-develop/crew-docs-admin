@@ -29,7 +29,7 @@
 - 액션:
   - 활동 제한 (기간 선택: 1일/3일/7일/30일)
   - 제한 해제
-  - 회원 탈퇴 처리 (Apple 5.1.1(v) 필수 — 운영팀 요청 시 계정 삭제)
+  - 회원 탈퇴 처리 (운영팀 요청 시 — 아래 주의사항 참고)
 
 ## 3. API 호출
 
@@ -38,7 +38,7 @@
 | 목록 조회 | GET | `/api/admin/users?page=&q=` | |
 | 상세 조회 | GET | `/api/admin/users/:id` | 기기 정보·관심사 포함 |
 | 제한 설정 | PATCH | `/api/admin/users/:id` | `{ restrictedUntil }` |
-| 회원 탈퇴 | DELETE | `/api/admin/users/:id` | 계정 삭제 (복구 불가) |
+| 회원 탈퇴 | DELETE | `/api/admin/users/:id` | ⚠️ 단순 DB 삭제 금지 — 아래 주의사항 참고 |
 
 ## 4. 상태 · 필터
 
@@ -46,7 +46,20 @@
 - 정렬: 가입일 최신순 (고정)
 - 페이지네이션: 20건/페이지
 
-## 5. 완료 기준
+## 5. 회원 탈퇴 주의사항
+
+현재 `DELETE /api/admin/users/:id`는 `prisma.user.delete`로 DB에서 바로 삭제한다. 어드민에서 탈퇴 처리 시 아래 절차가 필요하다 ([로그인 정책](https://github.com/900k-develop/crew-docs/blob/main/docs/3-policies/login.md) 1.9 · 1.10):
+
+| 절차 | 내용 |
+|---|---|
+| 전화번호 암호화 보관 | 탈퇴 후 6개월 (제재 중이면 제재 종료까지) — 재가입 제한 조회에 사용 |
+| 카카오 연결 끊기 | 카카오 API 호출 필요 |
+| 애플 토큰 철회 | Apple Sign-in revoke token 필요 |
+| 푸시 토큰 삭제 | FCM 토큰 제거 |
+
+> **서버 개발 필요**: 위 절차를 처리하는 탈퇴 전용 API가 구현되기 전까지 어드민에서 직접 탈퇴를 실행하지 않는다.
+
+## 6. 완료 기준
 
 - [x] 목록 조회 동작
 - [x] 검색 동작
